@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<robot name="robotic_arm" xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- <turnGravityOff>1</turnGravityOff> -->
+  <!-- <static>true</static> -->
+    <material name="Cyan">
+        <color rgba="0 1 0 0"/>
+      </material>
+    <xacro:macro name="default_inertial" params="mass">
+    <inertial>
+      <mass value="${mass}" />
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+    </inertial>
+  </xacro:macro>
+  <link name = "base_link">
+    <visual>
+        <origin xyz="0 0 0.1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="1" length=".2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.1" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="1" length=".2"/>
+      </geometry>
+    </collision>
+    <xacro:default_inertial mass="10"/>
+  </link>
+  
+  <link name = "link_shoulder">
+    <visual>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.5" length="1.0"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.5" length="1.0"/>
+      </geometry>
+    </collision>
+    <xacro:default_inertial mass="10"/>
+  </link>
+  <joint name="joint_base_shoulder" type="continuous">
+    <axis xyz="0 0 1" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="link_shoulder"/>
+    <origin xyz="0 0 0.2" rpy="0 0 0"/>
+  </joint>
+
+  <transmission name="trans_base_shoulder">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="base_shoulder_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_base_shoulder">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+  
+  <link name="link_arm">
+    <visual>
+        <origin xyz="1.0 0 0.1" rpy="0 0 0"/>
+      <geometry>
+        <box size="2 .2 .2"/>
+      </geometry>
+      <material name="Cyan"/>
+    </visual>
+    <collision>
+      <origin xyz="1 0 0.1" rpy="0 0 0"/>
+      <geometry>
+        <box size="2 .2 .2"/>
+      </geometry>
+    </collision>
+    <xacro:default_inertial mass="10"/>
+  </link>
+  <joint name="joint_shoulder_arm" type="prismatic">
+      <limit effort="100.0" lower="-1.5" upper="0.5" velocity="0.8"/>
+    <axis xyz="1 0 0" rpy="0 0 0"/>
+    <parent link="link_shoulder"/>
+    <child link="link_arm"/>
+    <origin xyz="0 0 1.0" rpy="0 0 0"/>
+  </joint>
+  <transmission name="trans_shoulder_arm">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="shoulder_arm_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="joint_shoulder_arm">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+  
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/</robotNamespace>
+    </plugin>
+  </gazebo>
+</robot>

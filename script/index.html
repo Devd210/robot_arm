@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<script type="text/javascript" src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+<script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
+<script type="text/javascript" type="text/javascript">
+  // Connecting to ROS
+  // -----------------
+
+  var ros = new ROSLIB.Ros({
+    url : 'ws://localhost:9090'
+  });
+
+  ros.on('connection', function() {
+    console.log('Connected to websocket server.');
+  });
+
+  ros.on('error', function(error) {
+    console.log('Error connecting to websocket server: ', error);
+  });
+
+  ros.on('close', function() {
+    console.log('Connection to websocket server closed.');
+  });
+  var rarm_shoulder_controller = new ROSLIB.Topic({
+      ros : ros,
+      name : '/rarm_shoulder_controller/command',
+      messageType : 'std_msgs/Float64'
+    });
+  var rarm_arm_controller = new ROSLIB.Topic({
+    ros : ros,
+    name : '/rarm_arm_controller/command',
+    messageType : 'std_msgs/Float64'
+  });
+  // Publishing a Topic
+  // ------------------
+  function publish_function () {
+    var displacement=0.0,angle=0.0;
+    angle=parseFloat($("#theta").val());
+    // displacement=parseFloat(to_string(displacement));
+    displacement=parseFloat($("#disp").val()); 
+    
+
+    var theta = new ROSLIB.Message({
+      data : angle
+    });
+    rarm_shoulder_controller.publish(theta);
+    
+    var disp = new ROSLIB.Message({
+      data : displacement
+    });
+    rarm_arm_controller.publish(disp);
+    // document.write(angle);
+    // document.write(displacement);
+  };
+</script>
+</head>
+
+<body>
+  <div class="container">
+    <form name="dataform" onsubmit="return publish_function()">
+  
+      <label for="theta">Input position of shoulder (0-2*pi)</label>
+      <input type="text" id="theta" name="theta" step="any">
+  
+      <label for="lname">Input position of arm (-1.5 to 0.5)</label>
+      <input type="text" id="disp" name="disp" step="any">
+      <input type="submit" value="Submit">
+  
+    </form>
+  </div> 
+</body>
+</html>
